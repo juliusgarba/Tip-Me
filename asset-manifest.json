@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/Tip-Me/static/css/main.a30c2987.chunk.css",
+    "main.js": "/Tip-Me/static/js/main.8b016803.chunk.js",
+    "main.js.map": "/Tip-Me/static/js/main.8b016803.chunk.js.map",
+    "runtime-main.js": "/Tip-Me/static/js/runtime-main.c7cf68d1.js",
+    "runtime-main.js.map": "/Tip-Me/static/js/runtime-main.c7cf68d1.js.map",
+    "static/css/2.7cf1c5b2.chunk.css": "/Tip-Me/static/css/2.7cf1c5b2.chunk.css",
+    "static/js/2.bcbde921.chunk.js": "/Tip-Me/static/js/2.bcbde921.chunk.js",
+    "static/js/2.bcbde921.chunk.js.map": "/Tip-Me/static/js/2.bcbde921.chunk.js.map",
+    "static/js/3.3f1f5bea.chunk.js": "/Tip-Me/static/js/3.3f1f5bea.chunk.js",
+    "static/js/3.3f1f5bea.chunk.js.map": "/Tip-Me/static/js/3.3f1f5bea.chunk.js.map",
+    "index.html": "/Tip-Me/index.html",
+    "static/css/2.7cf1c5b2.chunk.css.map": "/Tip-Me/static/css/2.7cf1c5b2.chunk.css.map",
+    "static/css/main.a30c2987.chunk.css.map": "/Tip-Me/static/css/main.a30c2987.chunk.css.map",
+    "static/js/2.bcbde921.chunk.js.LICENSE.txt": "/Tip-Me/static/js/2.bcbde921.chunk.js.LICENSE.txt",
+    "static/media/restaurant.ae46d8b0.jpg": "/Tip-Me/static/media/restaurant.ae46d8b0.jpg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.c7cf68d1.js",
+    "static/css/2.7cf1c5b2.chunk.css",
+    "static/js/2.bcbde921.chunk.js",
+    "static/css/main.a30c2987.chunk.css",
+    "static/js/main.8b016803.chunk.js"
+  ]
+}
