@@ -3,104 +3,95 @@
 pragma solidity ^0.8.0;
 
 contract OpenTip {
+    address private owner;
+
     struct Wallet {
         string name;
-        address walletAddress;
+        Tip[] tips;
+        bool approved;
     }
 
     struct Tip {
         string message;
         uint256 amount;
         address sender;
-        address receiver;
         uint256 timeStamp;
     }
 
-    mapping(string => address) nameToAddressMapping;
-    mapping(uint256 => Tip) tips;
-    mapping (address => Wallet) wallets;
-    mapping(address => uint256[]) ownTips;
-    string[] namesTaken;
+    mapping(string => address) private nameToAddressMapping;
+    mapping(address => Wallet) private wallets;
 
-    uint256 tipsTracker = 0;    
-
-    // return true if "_name" is taken, false otherwise
-    function isTaken(string calldata _name, string[] memory _namesTaken) private pure returns (bool) {
-            
-        for (uint256 i = 0; i < _namesTaken.length; i++) {
-            if (keccak256(abi.encodePacked(_namesTaken[i])) == keccak256(abi.encodePacked(_name))) {                
-                return true;
-            }
-        }
-        return false;
+    constructor() {
+        owner = msg.sender;
     }
 
-    // Staff create new wallet here
+    /// @dev allow users to check if a name is taken
+    /// @notice return true if "_name" is taken, false otherwise
+    function isTaken(string calldata _name) public view returns (bool) {
+        require(bytes(_name).length > 0, "Empty name");
+        return nameToAddressMapping[_name] != address(0);
+    }
+
+    /// @dev allows staff members to create a wallet
     function createNewWallet(string calldata _name, address _walletAddress)
         public
-    {        
-        bool taken = isTaken(_name, namesTaken);
+    {
+        require(
+            _walletAddress != address(0),
+            "Error: Address zero is not a valid address"
+        );
+        bool taken = isTaken(_name);
         require(taken == false, "Name already taken");
-        namesTaken.push(_name);
-        wallets[_walletAddress] = Wallet(_name, _walletAddress);
+
+        Wallet storage newWallet = wallets[_walletAddress];
+        require(
+            bytes(newWallet.name).length == 0,
+            "Address already has a registered wallet"
+        );
+        newWallet.name = _name;
         nameToAddressMapping[_name] = _walletAddress;
     }
 
-    // User tip a staff
-    function tip(
-        string calldata _message,
-        string calldata _name,
-        address _to        
-    ) public payable {
+    /**
+     * @dev allow the contract's owner to verify and approve a wallet
+     */
+    function approveWallet(address _walletAddress) public {
         require(
-            nameToAddressMapping[_name] == _to,
-            "Name or Address not registered yet!"
+            bytes(wallets[_walletAddress].name).length > 0,
+            "User hasn't created a wallet"
+        );
+        require(owner == msg.sender, "Unauthorized caller");
+        wallets[_walletAddress].approved = true;
+    }
+
+    /// @dev allow users to tip a staff
+    function tip(string calldata _message, string calldata _name)
+        public
+        payable
+    {
+        require(isTaken(_name), "Name or Address not registered yet!");
+        address staffAddress = checkAddressWithName(_name);
+        require(
+            wallets[staffAddress].approved,
+            "This wallet hasn't been approved"
         );
         uint256 _amount = msg.value;
-        // create a  new tip object
-        tips[tipsTracker] = Tip(_message, _amount, msg.sender, _to, block.timestamp);
-        // assign tips object to staff
-        ownTips[_to].push(tipsTracker);
-        tipsTracker += 1;
+
+        wallets[staffAddress].tips.push(
+            Tip(_message, _amount, msg.sender, block.timestamp)
+        );
         // transfer tip amount to staff
-        (bool sent, ) = payable(_to).call{value: _amount}("");
+        (bool sent, ) = payable(staffAddress).call{value: msg.value}("");
         require(sent);
     }
 
-    // read a tip details from storage
-    function readTip(uint256 tipId)
-        public
-        view
-        returns (
-            string memory message,
-            uint256 amount,
-            address sender,            
-            uint256 timeStamp
-        )
-    {
-        Tip memory _tip = tips[tipId];
-        require(msg.sender == _tip.receiver, "Not allowed to view tip");
-        message = _tip.message;
-        amount = _tip.amount;
-        sender = _tip.sender;        
-        timeStamp = _tip.timeStamp;
-    }
-
-    // return an array of IDs of user's tips
-    function readMyTips() public view returns (uint256[] memory) {
-        return ownTips[msg.sender];
-    }
-
-    // return list of names taken
-    function readNamesTaken() public view returns(string[] memory) {
-        return namesTaken;
-    }
-    // check if user is a staff member
+    /// @dev allow users to check if user is a staff member
     function isStaff(string calldata _name) public view returns (bool) {
-        return (nameToAddressMapping[_name] != address(0));
+        address staffAddress = checkAddressWithName(_name);
+        return (wallets[staffAddress].approved);
     }
 
-    // return address of an associated name
+    ///  @return address of an associated name
     function checkAddressWithName(string calldata _name)
         public
         view
@@ -109,10 +100,8 @@ contract OpenTip {
         return nameToAddressMapping[_name];
     }
 
-    // get wallet details 
-    function checkNameWithAddress(address _address) public view returns (string memory) {
-        Wallet memory wallet = wallets[_address];        
-        string memory name = wallet.name;
-        return name;
+    /// @dev get wallet details
+    function getWallet(address _address) public view returns (Wallet memory) {
+        return wallets[_address];
     }
 }
